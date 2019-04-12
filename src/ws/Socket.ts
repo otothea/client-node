@@ -334,7 +334,12 @@ export class Socket extends EventEmitter {
                 timeout(this.options.pingTimeout),
                 new Socket.Promise<void>(resolve => ws.once('pong', resolve)),
             ]);
-            ws.ping();
+
+            try {
+                ws.ping();
+            } catch (e) {
+                // Ignore error and just let it trigger a timeout
+            }
         } else {
             // Otherwise we'll resort to sending a ping message over the socket.
             promise = this.call('ping', [], {
