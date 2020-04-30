@@ -1,6 +1,6 @@
+import { AuthenticationFailedError } from '@mixer/chat-client-websocket';
 import { Client } from '../Client';
-import { AuthenticationFailedError } from '../errors';
-import { IResponse } from '../RequestRunner';
+import { IOptionalUrlRequestOptions, IResponse } from '../RequestRunner';
 import { Provider } from './Provider';
 
 export interface ITokenBase {
@@ -9,8 +9,8 @@ export interface ITokenBase {
 }
 
 export interface ITokens extends ITokenBase {
-    // ISO Date
-    expires: string;
+    // ISO Date as string or Unix timestamp (in ms) or Date object
+    expires: number | string | Date;
 }
 
 export interface IParsedTokens extends ITokenBase {
@@ -200,7 +200,7 @@ export class OAuthProvider extends Provider {
     /**
      * Returns info to add to the client's request.
      */
-    public getRequest() {
+    public getRequest(): IOptionalUrlRequestOptions {
         const headers: { [key: string]: string } = {
             'Client-ID': this.details.client_id,
         };
