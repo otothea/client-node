@@ -1,11 +1,12 @@
 import { Client } from '../Client';
+import { IOptionalUrlRequestOptions } from '../RequestRunner';
 import { Provider } from './Provider';
 export interface ITokenBase {
     access?: string;
     refresh?: string;
 }
 export interface ITokens extends ITokenBase {
-    expires: string;
+    expires: number | string | Date;
 }
 export interface IParsedTokens extends ITokenBase {
     expires?: Date;
@@ -61,7 +62,7 @@ export declare class OAuthProvider extends Provider {
     /**
      * Unpacks data from a token response.
      */
-    private unpackResponse(res);
+    private unpackResponse;
     /**
      * Attempts to authenticate based on a query string, gotten from
      * redirecting back from the authorization url (see .getRedirect).
@@ -77,10 +78,6 @@ export declare class OAuthProvider extends Provider {
     /**
      * Returns info to add to the client's request.
      */
-    getRequest(): {
-        headers: {
-            [key: string]: string;
-        };
-    };
+    getRequest(): IOptionalUrlRequestOptions;
     getClientId(): string;
 }

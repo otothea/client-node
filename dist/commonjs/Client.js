@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable-next-line import-name no-require-imports
+const chat_client_websocket_1 = require("@mixer/chat-client-websocket");
 const deepmerge_1 = require("deepmerge");
 const querystring = require("querystring");
 const OAuth_1 = require("./providers/OAuth");
 const RequestRunner_1 = require("./RequestRunner");
-const Socket_1 = require("./ws/Socket");
 const Channel_1 = require("./services/Channel");
 const Chat_1 = require("./services/Chat");
 const Clips_1 = require("./services/Clips");
@@ -23,7 +23,10 @@ class Client {
     constructor(requestRunner) {
         this.requestRunner = requestRunner;
         this.urls = {
-            api: 'https://mixer.com/api/v1',
+            api: {
+                v1: 'https://mixer.com/api/v1',
+                v2: 'https://mixer.com/api/v2',
+            },
             public: 'https://mixer.com',
         };
         this.channel = new Channel_1.ChannelService(this);
@@ -46,9 +49,16 @@ class Client {
     }
     /**
      * Sets the the API/public URLs for the client.
+     *
+     * If you are changing the URL for the API, you can set the version to which to set with the URL given.
      */
-    setUrl(kind, url) {
-        this.urls[kind] = url;
+    setUrl(kind, url, apiVer = 'v1') {
+        if (kind === 'api') {
+            this.urls.api[apiVer] = url;
+        }
+        else {
+            this.urls[kind] = url;
+        }
         return this;
     }
     /**
@@ -89,12 +99,16 @@ class Client {
     /**
      * Attempts to run a given request.
      */
-    request(method, path, data = {}) {
+    request(method, path, data = {}, apiVer = 'v1') {
+        let apiBase = this.urls.api[apiVer.toLowerCase()];
+        if (!apiBase) { // Default back to v1 if the one given is invalid.
+            apiBase = this.urls.api.v1;
+        }
         const req = deepmerge_1.all([
             this.provider ? this.provider.getRequest() : {},
             {
                 method: method || '',
-                url: this.buildAddress(this.urls.api, path || ''),
+                url: this.buildAddress(apiBase, path || ''),
                 headers: {
                     'User-Agent': this.userAgent,
                 },
@@ -110,7 +124,7 @@ class Client {
         });
     }
     createChatSocket(ws, endpoints, options) {
-        return new Socket_1.Socket(ws, endpoints, Object.assign({ clientId: this.provider instanceof OAuth_1.OAuthProvider ? this.provider.getClientId() : null }, options));
+        return new chat_client_websocket_1.Socket(ws, endpoints, Object.assign({ clientId: this.provider instanceof OAuth_1.OAuthProvider ? this.provider.getClientId() : null }, options));
     }
 }
 exports.Client = Client;

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const errors_1 = require("../errors");
+const chat_client_websocket_1 = require("@mixer/chat-client-websocket");
+const apiVerRegex = /^v[0-9]\//;
 /**
  * A service is basically a bridge/handler function for various endpoints.
  * It can be passed into the client and used magically.
@@ -22,7 +23,7 @@ class Service {
         // Otherwise, we have to handle it.
         let handler = handlers && handlers[res.statusCode];
         if (!handler) {
-            handler = errors_1.UnknownCodeError;
+            handler = chat_client_websocket_1.UnknownCodeError;
         }
         throw new handler(res);
     }
@@ -30,7 +31,12 @@ class Service {
      * Simple wrapper that makes and handles a response in one go.
      */
     makeHandled(method, path, data, handlers) {
-        return this.client.request(method, path, data)
+        let apiVersion;
+        if (apiVerRegex.test(path)) {
+            apiVersion = path.match(apiVerRegex)[0].slice(0, -1);
+            path = path.slice(3);
+        }
+        return this.client.request(method, path, data, apiVersion)
             .then(res => this.handleResponse(res, handlers));
     }
 }

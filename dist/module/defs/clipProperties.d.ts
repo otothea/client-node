@@ -2,7 +2,7 @@ import { ILocator } from './locator';
 export declare enum Maturity {
     Family = 1,
     Teen = 2,
-    EighteenPlus = 3,
+    EighteenPlus = 3
 }
 export interface IClipProperties {
     /**

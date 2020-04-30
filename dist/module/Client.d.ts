@@ -1,6 +1,6 @@
+import { IGenericWebSocket, ISocketOptions, Socket } from '@mixer/chat-client-websocket';
 import { Provider } from './providers/Provider';
 import { IOptionalUrlRequestOptions, IRequestRunner, IResponse } from './RequestRunner';
-import { IGenericWebSocket, ISocketOptions, Socket } from './ws/Socket';
 import { ChannelService } from './services/Channel';
 import { ChatService } from './services/Chat';
 import { ClipsService } from './services/Clips';
@@ -9,11 +9,13 @@ import { GameService } from './services/Game';
  * Main client.
  */
 export declare class Client {
-    private requestRunner;
+    private requestRunner?;
     private provider;
     private userAgent;
     urls: {
-        api: string;
+        api: {
+            [version: string]: string;
+        };
         public: string;
     };
     channel: ChannelService;
@@ -25,11 +27,13 @@ export declare class Client {
      * and dispatching requests to the API.
      */
     constructor(requestRunner?: IRequestRunner);
-    private buildUserAgent();
+    private buildUserAgent;
     /**
      * Sets the the API/public URLs for the client.
+     *
+     * If you are changing the URL for the API, you can set the version to which to set with the URL given.
      */
-    setUrl(kind: 'api' | 'public', url: string): this;
+    setUrl(kind: 'api' | 'public', url: string, apiVer?: 'v1' | 'v2'): this;
     /**
      * Builds a path to the Mixer API by concating it with the address.
      */
@@ -46,6 +50,6 @@ export declare class Client {
     /**
      * Attempts to run a given request.
      */
-    request<T>(method: string, path: string, data?: IOptionalUrlRequestOptions): Promise<IResponse<T>>;
+    request<T>(method: string, path: string, data?: IOptionalUrlRequestOptions, apiVer?: string): Promise<IResponse<T>>;
     createChatSocket(ws: IGenericWebSocket, endpoints: string[], options: ISocketOptions): Socket;
 }

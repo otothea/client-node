@@ -1,4 +1,5 @@
-import { UnknownCodeError } from '../errors';
+import { UnknownCodeError } from '@mixer/chat-client-websocket';
+var apiVerRegex = /^v[0-9]\//;
 /**
  * A service is basically a bridge/handler function for various endpoints.
  * It can be passed into the client and used magically.
@@ -29,7 +30,12 @@ var Service = /** @class */ (function () {
      */
     Service.prototype.makeHandled = function (method, path, data, handlers) {
         var _this = this;
-        return this.client.request(method, path, data)
+        var apiVersion;
+        if (apiVerRegex.test(path)) {
+            apiVersion = path.match(apiVerRegex)[0].slice(0, -1);
+            path = path.slice(3);
+        }
+        return this.client.request(method, path, data, apiVersion)
             .then(function (res) { return _this.handleResponse(res, handlers); });
     };
     return Service;
